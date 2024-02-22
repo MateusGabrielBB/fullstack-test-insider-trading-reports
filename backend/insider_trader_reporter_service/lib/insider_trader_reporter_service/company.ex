@@ -35,7 +35,6 @@ defmodule InsiderTraderReporterService.Company do
   def get_company_market_cap_value(company_ticker) do
     case YahooFinaceClient.fetch_market_cap_value(company_ticker) do
       {:ok, resp_body} ->
-        IO.inspect(resp_body)
         {:ok, decoded_response} = Jason.decode(resp_body)
         company_market_cap = filter_company_market_cap_value(decoded_response)
         %{company_market_cap: company_market_cap}

@@ -20,10 +20,13 @@ defmodule InsiderTraderReporterServiceWeb.Router do
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", InsiderTraderReporterServiceWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", InsiderTraderReporterServiceWeb do
+    pipe_through :api
+
+    get "/company/:company_name/info", InsiderController, :get_company_info
+    get "/company/:company_name/filings", InsiderController, :get_company_filings
+    get "/company/:company_name/filings/data", InsiderController, :get_insider_trading_transactions_data
+  end
 
   # Enables LiveDashboard only for development
   #
