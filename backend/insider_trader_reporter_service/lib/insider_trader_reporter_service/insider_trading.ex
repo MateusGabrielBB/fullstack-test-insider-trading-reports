@@ -2,14 +2,27 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   import SweetXml
 
   alias InsiderTraderReporterService.Clients.SecClient
+  alias InsiderTraderReporterService.Company
 
   def get_insider_trading_transactions_data(company_name) do
-    %{company_filings: company_filings} = InsiderTraderReporterService.Company.get_company_filings(company_name)
+    %{company_info: [company_cik, _company_name, company_ticker, _exchange]} = Company.get_company_info(company_name)
+    %{company_filings: company_filings} = Company.get_company_filings(company_name)
+    %{company_market_cap: company_market_cap} = Company.get_company_market_cap_value(company_ticker)
     company_filings_data = company_filings
     |> Enum.map(fn(map) -> get_company_filing_data(map[:filing_href]) end)
     |> flat_transactions_data_list()
 
-    %{company_filings_data: company_filings_data}
+    insider_trading_transactions_data = %{
+      company_data: %{
+        company_name: company_name["company_name"],
+        company_ticker: company_ticker,
+        company_cik: company_cik,
+        company_market_cap: company_market_cap
+      },
+      company_filings_data: company_filings_data
+    }
+
+    %{insider_trading_transactions_data: insider_trading_transactions_data}
   end
 
   defp flat_transactions_data_list(transactions_data_lists) do
@@ -39,8 +52,6 @@ defmodule InsiderTraderReporterService.InsiderTrading do
     |> xpath(
       ~x"//ownershipDocument",
       transaction_date: ~x"./nonDerivativeTable/nonDerivativeTransaction/transactionDate/value/text()"ls,
-      company_name: ~x"./issuer/issuerName/text()"s,
-      company_ticker: ~x"./issuer/issuerTradingSymbol/text()"s,
       insider_name: ~x"./reportingOwner/reportingOwnerId/rptOwnerName/text()"s,
       insider_title: ~x"./reportingOwner/reportingOwnerRelationship/officerTitle/text()"s,
       transaction_shares_amount: ~x"./nonDerivativeTable/nonDerivativeTransaction/transactionAmounts/transactionShares/value/text()"lI,
@@ -60,9 +71,7 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   defp create_transactions_data_map(filings_data, {date, amount, value}) do
     %{
       transaction_data: %{
-        company_name: filings_data[:company_name],
         transaction_date: date,
-        company_ticker: filings_data[:company_ticker],
         insider_name: filings_data[:insider_name],
         insider_title: filings_data[:insider_title],
         transaction_shares_amount: amount,
