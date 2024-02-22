@@ -4,7 +4,7 @@ defmodule InsiderTraderReporterService.Company do
   alias InsiderTraderReporterService.Clients.SecClient
 
   def get_company_info(company_name) do
-    case handle_client_response(SecClient.fetch_companies_info()) do
+    case SecClient.fetch_companies_info() do
       {:ok, resp_body} ->
         {:ok, decoded_response} = Jason.decode(resp_body)
         company_info = decoded_response["data"]
@@ -21,29 +21,13 @@ defmodule InsiderTraderReporterService.Company do
     %{company_info: company_info} = get_company_info(company_name)
     company_cik = hd(company_info)
 
-    case handle_client_response(SecClient.fetch_company_filings(company_cik)) do
+    case SecClient.fetch_company_filings_list(company_cik) do
       {:ok, resp_body} ->
         company_filing = filter_relevant_filings(resp_body)
         %{company_filings: company_filing}
 
       {:error, message} ->
         {:error, message}
-    end
-  end
-
-  defp handle_client_response(client_response) do
-    case client_response do
-      {:ok, %HTTPoison.Response{status_code: 200, body: resp_body}} ->
-        {:ok, resp_body}
-
-      {:ok, %HTTPoison.Response{status_code: code, body: _resp_body}} when code !== 200 ->
-        {:error, "Failed request! | Response Status code: #{code}"}
-
-      {:error, reason} ->
-        {:error, "Failed request! | Reason: #{reason}"}
-
-      _ ->
-        {:error, "Failed request! | Unknown Reason"}
     end
   end
 
