@@ -62,6 +62,5 @@ defmodule InsiderTraderReporterService.Company do
         |> Map.get("summaryDetail", %{})
         |> Map.get("marketCap", %{})
         |> Map.get("raw", 0)
-
   end
 end

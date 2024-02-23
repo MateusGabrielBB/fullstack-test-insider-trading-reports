@@ -57,6 +57,7 @@ defmodule InsiderTraderReporterService.InsiderTrading do
       transaction_shares_amount: ~x"./nonDerivativeTable/nonDerivativeTransaction/transactionAmounts/transactionShares/value/text()"lI,
       transaction_shares_value: ~x"./nonDerivativeTable/nonDerivativeTransaction/transactionAmounts/transactionPricePerShare/value/text()"lF
     )
+    |> handle_empty_transaction_shares_value
     |> Enum.into(%{filing_url_reference: fetch_filing_data_url_part})
   end
 
@@ -79,5 +80,12 @@ defmodule InsiderTraderReporterService.InsiderTrading do
         filing_url_reference: filings_data[:filing_url_reference]
       }
     }
+  end
+
+  defp handle_empty_transaction_shares_value(filing_data) do
+    Map.update(filing_data, :transaction_shares_value, [0.0], fn
+        [] -> [0.0]
+        value -> value
+    end)
   end
 end
