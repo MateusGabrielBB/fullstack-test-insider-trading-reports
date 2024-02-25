@@ -3,13 +3,15 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   alias InsiderTraderReporterService.Company
 
   @sec_base_url "https://www.sec.gov"
+  @market_cap_divisor 100
+  @percentage_notation_precision 9
 
   def get_insider_trading_report_data(company_name) do
     %{company_info: [company_cik, _company_name, company_ticker, _exchange]} = Company.get_company_info(company_name)
-    %{company_filings: company_filings} = Company.get_company_filings(company_name)
     %{company_market_cap: company_market_cap} = Company.get_company_market_cap_value(company_ticker)
+    %{company_filings: company_filings} = Company.get_company_filings(company_name)
     company_filings_data = company_filings
-    |> Enum.map(fn(map) -> get_company_filing_data(map[:filing_href]) end)
+    |> Enum.map(fn(map) -> get_company_filing_data(map[:filing_href], company_market_cap) end)
     |> flat_transactions_data_list()
     insider_trading_transactions_data = %{
       company_data: %{
@@ -29,14 +31,14 @@ defmodule InsiderTraderReporterService.InsiderTrading do
       |> Enum.map(fn %{transaction_data: transaction_data} -> %{transaction_data: transaction_data} end)
   end
 
-  defp get_company_filing_data(filing_url) do
+  defp get_company_filing_data(filing_url, company_market_cap) do
     {:ok, response} = SecClient.fetch_company_filings_page(filing_url)
     {:ok, parsed_page} = Floki.parse_document(response)
     [[partial_filing_url]] = extract_filing_url(parsed_page)
     filing_url = "#{@sec_base_url}#{partial_filing_url}"
     {:ok, filings_data_xml} = SecClient.fetch_company_filing_data(filing_url)
     filings_data = parse_and_filter_filings_data(filings_data_xml, filing_url)
-    split_filing_data_into_transaction_data(filings_data)
+    split_filing_data_by_transaction(filings_data, company_market_cap)
   end
 
   defp extract_filing_url(parsed_page) do
@@ -64,15 +66,18 @@ defmodule InsiderTraderReporterService.InsiderTrading do
     }
   end
 
-  defp split_filing_data_into_transaction_data(filings_data) do
+  defp split_filing_data_by_transaction(filings_data, company_market_cap) do
     filing_transactions_dates = filings_data[:transaction_date]
     filing_transactions_share_amounts = filings_data[:transaction_shares_amount]
     filing_transactions_per_share_prices = filings_data[:transaction_per_share_price]
     Enum.zip([filing_transactions_dates, filing_transactions_share_amounts, filing_transactions_per_share_prices])
-    |> Enum.map(fn(values) -> create_transactions_data_map(filings_data, values) end)
+    |> Enum.map(fn(values) -> create_transactions_data_map(filings_data, values, company_market_cap) end)
   end
 
-  defp create_transactions_data_map(filings_data, {date, amount, price}) do
+  defp create_transactions_data_map(filings_data, {date, amount, price}, company_market_cap) do
+    transaction_value = amount * price
+    market_cap_percentage_value = (transaction_value/company_market_cap) * @market_cap_divisor
+    formatted_market_cap_percentage_value = convert_to_percentage_notation(market_cap_percentage_value)
     %{
       transaction_data: %{
         transaction_date: date,
@@ -80,10 +85,22 @@ defmodule InsiderTraderReporterService.InsiderTrading do
         insider_title: filings_data[:insider_title],
         transaction_shares_amount: amount,
         transaction_per_share_price: price,
-        transaction_value: amount * price,
+        transaction_value: transaction_value,
+        market_cap_percentage_value: formatted_market_cap_percentage_value,
         filing_url: filings_data[:filing_url]
       }
     }
+  end
+
+  defp convert_to_percentage_notation(market_cap_percentage_value) when market_cap_percentage_value != 0 do
+    percentage_notation = market_cap_percentage_value
+    |> Decimal.from_float()
+    |> Decimal.round(@percentage_notation_precision)
+    "#{percentage_notation}%"
+  end
+
+  defp convert_to_percentage_notation(_market_cap_percentage_value) do
+    "0.0%"
   end
 
   defp number_type(str) when is_binary(str) do
