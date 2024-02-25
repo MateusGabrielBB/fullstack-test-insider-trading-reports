@@ -50,6 +50,7 @@ defmodule InsiderTraderReporterService.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 2.2"},
       {:sweet_xml, "~> 0.7.4"},
+      {:elixir_xml_to_map, "~> 3.1"},
     ]
   end
 
