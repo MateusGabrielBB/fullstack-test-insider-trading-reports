@@ -34,9 +34,9 @@ defmodule InsiderTraderReporterService.InsiderTrading do
     {:ok, parsed_page} = Floki.parse_document(response)
     [[partial_filing_url]] = extract_filing_url(parsed_page)
     filing_url = "#{@sec_base_url}#{partial_filing_url}"
-    {:ok, filing_data_xml} = SecClient.fetch_company_filings_data(filing_url)
-    parsed_filing_data = parse_and_filter_filings_data(filing_data_xml, filing_url)
-    split_filing_data_into_transaction_data(parsed_filing_data)
+    {:ok, filings_data_xml} = SecClient.fetch_company_filing_data(filing_url)
+    filings_data = parse_and_filter_filings_data(filings_data_xml, filing_url)
+    split_filing_data_into_transaction_data(filings_data)
   end
 
   defp extract_filing_url(parsed_page) do
@@ -47,39 +47,40 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   end
 
   defp parse_and_filter_filings_data(filing_data_xml, filing_url) do
-    parsed_filing_data =  XmlToMap.naive_map(filing_data_xml)
+    filing_data =  XmlToMap.naive_map(filing_data_xml)
     |> Map.get("ownershipDocument", %{})
     {insider_name, insider_title} =
-      get_insider_data(parsed_filing_data)
+      get_insider_data(filing_data)
 
-    {transactions_shares_amounts, transactions_shares_values, transactions_dates} =
-      get_transactions_data(parsed_filing_data)
+    {transactions_shares_amounts, transactions_per_share_prices, transactions_dates} =
+      get_transactions_data(filing_data)
     %{
       transaction_date: transactions_dates,
       insider_name: insider_name,
       insider_title: insider_title,
       transaction_shares_amount: transactions_shares_amounts,
-      transaction_shares_value: transactions_shares_values,
+      transaction_per_share_price: transactions_per_share_prices,
       filing_url: filing_url
     }
   end
 
-  defp split_filing_data_into_transaction_data(filing_data) do
-    filing_transactions_dates = filing_data[:transaction_date]
-    filing_transactions_share_amounts = filing_data[:transaction_shares_amount]
-    filing_transactions_share_values = filing_data[:transaction_shares_value]
-    Enum.zip([filing_transactions_dates, filing_transactions_share_amounts, filing_transactions_share_values])
-    |> Enum.map(fn(lists) -> create_transactions_data_map(filing_data, lists) end)
+  defp split_filing_data_into_transaction_data(filings_data) do
+    filing_transactions_dates = filings_data[:transaction_date]
+    filing_transactions_share_amounts = filings_data[:transaction_shares_amount]
+    filing_transactions_per_share_prices = filings_data[:transaction_per_share_price]
+    Enum.zip([filing_transactions_dates, filing_transactions_share_amounts, filing_transactions_per_share_prices])
+    |> Enum.map(fn(values) -> create_transactions_data_map(filings_data, values) end)
   end
 
-  defp create_transactions_data_map(filings_data, {date, amount, value}) do
+  defp create_transactions_data_map(filings_data, {date, amount, price}) do
     %{
       transaction_data: %{
         transaction_date: date,
         insider_name: filings_data[:insider_name],
         insider_title: filings_data[:insider_title],
         transaction_shares_amount: amount,
-        transaction_shares_value: value,
+        transaction_per_share_price: price,
+        transaction_value: amount * price,
         filing_url: filings_data[:filing_url]
       }
     }
@@ -116,28 +117,28 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   end
 
   defp get_transactions_data(filing_data) do
-    {nd_transactions_shares_amounts, nd_transactions_shares_values, nd_transactions_dates} =
+    {nd_transactions_shares_amounts, nd_transactions_per_share_prices, nd_transactions_dates} =
       get_transactions_data_by_transaction_type(filing_data, "nonDerivativeTable", "nonDerivativeTransaction")
-    {d_transactions_shares_amounts, d_transactions_shares_values, d_transactions_dates} =
+    {d_transactions_shares_amounts, d_transactions_per_share_prices, d_transactions_dates} =
       get_transactions_data_by_transaction_type(filing_data, "derivativeTable", "derivativeTransaction")
     transactions_shares_amounts = nd_transactions_shares_amounts ++ d_transactions_shares_amounts
-    transactions_shares_values = nd_transactions_shares_values ++ d_transactions_shares_values
+    transactions_per_share_prices = nd_transactions_per_share_prices ++ d_transactions_per_share_prices
     transactions_dates = nd_transactions_dates ++ d_transactions_dates
-    {transactions_shares_amounts, transactions_shares_values, transactions_dates}
+    {transactions_shares_amounts, transactions_per_share_prices, transactions_dates}
   end
 
   defp get_transactions_data_by_transaction_type(filing_data, first_key, second_key) do
     transactions_data =
       get_transactions_list(filing_data, first_key, second_key)
     transactions_shares_amounts =
-      get_transactions_shares_values(transactions_data, "transactionAmounts", "transactionShares")
-    transactions_shares_values =
-      get_transactions_shares_values(transactions_data, "transactionAmounts", "transactionPricePerShare")
+      get_transactions_per_share_prices(transactions_data, "transactionAmounts", "transactionShares")
+    transactions_per_share_prices =
+      get_transactions_per_share_prices(transactions_data, "transactionAmounts", "transactionPricePerShare")
     transactions_dates = transactions_data
     |> Enum.map(fn(map) ->
       extract_transaction_field_value_from_map(map, "transactionDate")
     end)
-    {transactions_shares_amounts, transactions_shares_values, transactions_dates}
+    {transactions_shares_amounts, transactions_per_share_prices, transactions_dates}
   end
 
   defp get_transactions_list(transactions_data, first_key, second_key) do
@@ -148,7 +149,7 @@ defmodule InsiderTraderReporterService.InsiderTrading do
     |> check_and_adjust_collection_type("list")
   end
 
-  defp get_transactions_shares_values(transactions_list, first_key, second_key) do
+  defp get_transactions_per_share_prices(transactions_list, first_key, second_key) do
     transactions_list
     |> Enum.map(fn(map) ->
       extract_transaction_field_value_from_map(map, first_key, second_key)

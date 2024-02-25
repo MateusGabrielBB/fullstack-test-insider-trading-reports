@@ -19,7 +19,7 @@ defmodule InsiderTraderReporterService.Clients.SecClient do
     handle_client_response(request_response)
   end
 
-  def fetch_company_filings_data(endpoint) do
+  def fetch_company_filing_data(endpoint) do
     request_response = HTTPoison.get(endpoint, @sec_request_headers)
     handle_client_response(request_response)
   end
