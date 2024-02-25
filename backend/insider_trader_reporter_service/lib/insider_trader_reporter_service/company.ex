@@ -21,7 +21,6 @@ defmodule InsiderTraderReporterService.Company do
   def get_company_filings(company_name) do
     %{company_info: company_info} = get_company_info(company_name)
     company_cik = hd(company_info)
-
     case SecClient.fetch_company_filings_list(company_cik) do
       {:ok, resp_body} ->
         company_filing = filter_relevant_filings(resp_body)
@@ -51,7 +50,7 @@ defmodule InsiderTraderReporterService.Company do
       filing_type: ~x"./filing-type/text()"s,
       filing_href: ~x"./filing-href/text()"s
     )
-    |> Enum.filter(fn(map) -> Map.get(map, :filing_type) in ["3", "4", "5"] end)
+    |> Enum.filter(fn(map) -> Map.get(map, :filing_type) in ["4"] end)
   end
 
   defp filter_company_market_cap_value(company_details) do
