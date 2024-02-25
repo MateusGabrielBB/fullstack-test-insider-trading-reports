@@ -1,4 +1,4 @@
-defmodule InsiderTraderReporterService.Clients.YahooFinaceClient do
+defmodule InsiderTraderReporterService.Clients.YahooFinanceClient do
   @yahoo_finance_base_url "https://query2.finance.yahoo.com"
 
   def fetch_market_cap_value(company_ticker) do

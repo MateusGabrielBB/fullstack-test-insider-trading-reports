@@ -13,7 +13,7 @@ defmodule InsiderTraderReporterService.InsiderTrading do
     |> flat_transactions_data_list()
     insider_trading_transactions_data = %{
       company_data: %{
-        company_name: company_name["company_name"],
+        company_name: Map.get(company_name, "company_name", ""),
         company_ticker: company_ticker,
         company_cik: company_cik,
         company_market_cap: company_market_cap
