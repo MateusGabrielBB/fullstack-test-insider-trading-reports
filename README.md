@@ -1,6 +1,14 @@
 # fullstack-test-insider-trading-reports
 This is a WIP!
 
+The objective of this project is to extract information about insider trading from the SEC and Edgar files to produce a report that helps with the analysis of this type of transaction.
+
+Still, it's necessary to improve the extraction of data from the reports to improve the accuracy of the data, and to the same end, it's necessary to implement a way to obtain the value of the company's market cap of the day on which the transitions were made to, this way it'll be possible to calculate the percentage of the value of market that the transaction value represents. Currently, I'm using the most recent market cap value provided by the Yahoo Finance API, which generates an imprecise value.
+
+Other improvements are mentioned later in this document and will be implemented in the future.
+
+As some forms have footnotes and other relevant information for more complete analysis of the transactions, the endpoint returns, with the rest of  the information, the links to access the reports from where the data is being extracted.
+
 # How to run the server
 First make sure you'r inside the directory `/backend/insider_trader_reporter_service/` then run the commands:
   * Install dependencies with `mix deps.get`
@@ -56,6 +64,7 @@ If the request have a valid company name, the response should be something like:
 - ~~Fix XML parser that causes inconsistencies when linking the number of shares sold and the value per share used in the transaction~~
 - Get the market values from the same data as the transactions to have a more accurate `market_cap_percentage_value`
 - Refactor the code to make it more readable and easier to work on the others improvements
+- Refactor improve project performance and resources usage
 - React frontend to make easier to search and analyze the data
 - Virtualize the development environment with docker and docker-compose
 - Improve the search to find the company data without having an exact match
