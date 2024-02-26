@@ -3,11 +3,9 @@ This is a WIP!
 
 The objective of this project is to extract information about insider trading from the SEC and Edgar files to produce a report that helps with the analysis of this type of transaction.
 
-Still, it's necessary to improve the extraction of data from the reports to improve the accuracy of the data, and to the same end, it's necessary to implement a way to obtain the value of the company's market cap of the day on which the transitions were made to, this way it'll be possible to calculate the percentage of the value of market that the transaction value represents. Currently, I'm using the most recent market cap value provided by the Yahoo Finance API, which generates an imprecise value.
+It's necessary to improve the extraction of data from the reports to improve the accuracy of data, and to the same end, it's necessary to implement a way to obtain the value of the company's market cap in the day on which the transitions were made, this way it'll be possible to calculate the percentage of the value of market cap that the transaction value represents. Currently, I'm using the most recent market cap value provided by the Yahoo Finance API, which generates imprecise values. Other improvements are mentioned later in this document and will be implemented in the future.
 
-Other improvements are mentioned later in this document and will be implemented in the future.
-
-As some forms have footnotes and other relevant information for more complete analysis of the transactions, the endpoint returns, with the rest of  the information, the links to access the reports from where the data is being extracted.
+As some forms have footnotes and other relevant information for a more complete analysis of transactions, the endpoint also returns links to access the reports from where the data is being extracted.
 
 # How to run the server
 First make sure you'r inside the directory `/backend/insider_trader_reporter_service/` then run the commands:
@@ -16,8 +14,8 @@ First make sure you'r inside the directory `/backend/insider_trader_reporter_ser
   * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
 # How to use the API
-To get the insider trading transactions data, you need to make a request to the endpoint `http://localhost:4000/api/company/{company_name}/insider-trading-data`.
-Currently, to get a response from the API, the path parameter `{company_name}` must be equal to the company names in this [file](https://www.sec.gov/files/company_tickers_exchange.json) (in the file the field is called `"name"`).
+To get insider trading transactions data, it's necessary to make a request to the endpoint `http://localhost:4000/api/company/{company_name}/insider-trading-data`.
+Currently, to get a response from the API, the path parameter `{company_name}` must be equal to the company name in this [file](https://www.sec.gov/files/company_tickers_exchange.json).
 
 If the request have a valid company name, the response should be something like:
 ```
@@ -62,12 +60,12 @@ If the request have a valid company name, the response should be something like:
 
 # Future improvements:
 - ~~Fix XML parser that causes inconsistencies when linking the number of shares sold and the value per share used in the transaction~~
-- Get the market values from the same data as the transactions to have a more accurate `market_cap_percentage_value`
+- Get the market values from the same date as the transactions dates to have a more accurate `market_cap_percentage_value`
 - Refactor the code to make it more readable and easier to work on the others improvements
-- Refactor improve project performance and resources usage
-- React frontend to make easier to search and analyze the data
+- Refactor to improve project performance and resources usage
+- Create a React project to connect to the Elixir project and enable research and data analysis in a more visually pleasing way
 - Virtualize the development environment with docker and docker-compose
 - Improve the search to find the company data without having an exact match
-- Add some kind of cache to avoid repeated requests for no reason, also add a validation of cached data to confirm when new requests are necessary
+- Add some kind of cache to avoid unnecessary repeated requests, also add validation of the cached data to confirm when new requests are needed
 - Unit and integration tests
 - API and project documentation
