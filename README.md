@@ -63,7 +63,7 @@ If the request have a valid company name, the response should be something like:
 - Get the market values from the same date as the transactions dates to have a more accurate `market_cap_percentage_value`
 - Refactor the code to make it more readable and easier to work on the others improvements
 - Refactor to improve project performance and resources usage
-- Create a React project to connect to the Elixir project and enable research and data analysis in a more visually pleasing way
+- Create a React project to connect to the Elixir project and enable searchs and data analysis in a more visually pleasing way
 - Virtualize the development environment with docker and docker-compose
 - Improve the search to find the company data without having an exact match
 - Add some kind of cache to avoid unnecessary repeated requests, also add validation of the cached data to confirm when new requests are needed
