@@ -9,8 +9,8 @@ defmodule InsiderTraderReporterServiceWeb.InsiderController do
 
   def get_company_info(conn, company_name) do
     case Company.get_company_info(company_name) do
-      %{company_info: nil} -> {:error, :not_found}
-      %{company_info: company_info} ->
+      {:company_info, nil} -> {:error, :not_found}
+      {:company_info, company_info} ->
         render(conn, "companyData.json", company_data: company_info)
       {:error, message} -> {:error, message}
       _ -> {:error, "Unexpected error"}

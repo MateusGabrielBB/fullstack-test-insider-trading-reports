@@ -22,7 +22,7 @@ defmodule InsiderTraderReporterService.Form do
   end
 
   def get_company_forms(company_name) do
-    %{company_info: company_info} = Company.get_company_info(company_name)
+    {:company_info, company_info} = Company.get_company_info(company_name)
     company_cik = hd(company_info)
     case SecClient.fetch_company_forms_list(company_cik) do
       {:ok, resp_body} ->

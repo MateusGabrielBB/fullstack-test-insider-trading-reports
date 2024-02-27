@@ -11,7 +11,7 @@ defmodule InsiderTraderReporterService.Company do
         company_info = decoded_response["data"]
         |> Enum.find(nil, fn data_set -> Enum.at(data_set, 1) === company_name end)
 
-        %{company_info: company_info}
+        {:company_info, company_info}
 
       {:error, message} ->
         {:error, message}
@@ -23,7 +23,7 @@ defmodule InsiderTraderReporterService.Company do
       {:ok, resp_body} ->
         {:ok, decoded_response} = Jason.decode(resp_body)
         company_market_cap = filter_company_market_cap_value(decoded_response)
-        %{company_market_cap: company_market_cap}
+        {:company_market_cap, company_market_cap}
 
       {:error, message} ->
         {:error, message}
