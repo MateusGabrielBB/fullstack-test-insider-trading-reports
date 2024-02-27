@@ -19,7 +19,7 @@ defmodule InsiderTraderReporterServiceWeb.InsiderController do
 
   def get_company_forms(conn, company_name) do
     case Form.get_company_forms(company_name) do
-      %{company_forms: company_forms} ->
+      {:company_forms, company_forms} ->
         render(conn, "companyForms.json", company_forms: company_forms)
       {:error, message} -> {:error, message}
       _ -> {:error, "Unexpected error"}
