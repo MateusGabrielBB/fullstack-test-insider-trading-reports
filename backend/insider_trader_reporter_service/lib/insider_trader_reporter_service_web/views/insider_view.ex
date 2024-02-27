@@ -2,11 +2,8 @@ defmodule InsiderTraderReporterServiceWeb.InsiderView do
   use InsiderTraderReporterServiceWeb, :view
 
   def render("companyData.json", %{company_data: company_data}) do
-    [company_cik, company_name, company_ticker | _company_data] = company_data
     %{
-      cik: company_cik,
-      name: company_name,
-      ticker: company_ticker,
+      company_data: company_data
     }
   end
 

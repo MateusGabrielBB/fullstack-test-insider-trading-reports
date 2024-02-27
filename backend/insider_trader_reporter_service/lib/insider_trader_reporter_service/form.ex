@@ -32,8 +32,8 @@ defmodule InsiderTraderReporterService.Form do
   end
 
   def get_company_forms(company_name) do
-    {:company_info, company_info} = Company.get_company_info(company_name)
-    company_cik = hd(company_info)
+    {:company_data, company_data} = Company.get_company_data(company_name)
+    company_cik = company_data.company_cik
     case SecClient.fetch_company_forms_list(company_cik) do
       {:ok, resp_body} ->
         {:company_forms, filter_relevant_forms(resp_body)}
