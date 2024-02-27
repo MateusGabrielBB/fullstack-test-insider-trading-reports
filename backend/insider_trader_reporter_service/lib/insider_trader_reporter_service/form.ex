@@ -3,10 +3,20 @@ defmodule InsiderTraderReporterService.Form do
 
   alias InsiderTraderReporterService.Clients.SecClient
   alias InsiderTraderReporterService.Company
+  alias InsiderTraderReporterService.InsiderTrader
+  alias InsiderTraderReporterService.Transaction
 
   @sec_base_url "https://www.sec.gov"
   @market_cap_divisor 100
   @percentage_notation_precision 9
+
+  defstruct [
+    transaction_data: %{
+      insider_trader_data: %InsiderTrader{},
+      transaction_data: %Transaction{}
+    },
+    form_url: ""
+  ]
 
   def get_company_forms_data(company_name, company_market_cap) do
     {:company_forms, company_forms} = get_company_forms(company_name)

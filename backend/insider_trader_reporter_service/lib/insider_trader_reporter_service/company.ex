@@ -3,6 +3,15 @@ defmodule InsiderTraderReporterService.Company do
   alias InsiderTraderReporterService.Clients.SecClient
   alias InsiderTraderReporterService.Clients.YahooFinanceClient
 
+  defstruct [
+    company_data: %{
+      company_name: "",
+      company_ticker: "",
+      company_cik: "",
+      company_market_cap: 0
+    }
+  ]
+
   def get_company_info(company_name) do
     company_name = Map.get(company_name, "company_name", "")
     case SecClient.fetch_companies_info() do
