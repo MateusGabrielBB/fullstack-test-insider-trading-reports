@@ -10,9 +10,9 @@ defmodule InsiderTraderReporterServiceWeb.InsiderView do
     }
   end
 
-  def render("companyFilings.json", %{company_filings: company_filings}) do
+  def render("companyForms.json", %{company_forms: company_forms}) do
     %{
-      filings: company_filings,
+      forms: company_forms,
     }
   end
 

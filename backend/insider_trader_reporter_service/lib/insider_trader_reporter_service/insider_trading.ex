@@ -1,6 +1,7 @@
 defmodule InsiderTraderReporterService.InsiderTrading do
   alias InsiderTraderReporterService.Clients.SecClient
   alias InsiderTraderReporterService.Company
+  alias InsiderTraderReporterService.Form
 
   @sec_base_url "https://www.sec.gov"
   @market_cap_divisor 100
@@ -9,9 +10,9 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   def get_insider_trading_report_data(company_name) do
     %{company_info: [company_cik, _company_name, company_ticker, _exchange]} = Company.get_company_info(company_name)
     %{company_market_cap: company_market_cap} = Company.get_company_market_cap_value(company_ticker)
-    %{company_filings: company_filings} = Company.get_company_filings(company_name)
-    company_filings_data = company_filings
-    |> Enum.map(fn(map) -> get_company_filing_data(map[:filing_href], company_market_cap) end)
+    %{company_forms: company_forms} = Form.get_company_forms(company_name)
+    company_forms_data = company_forms
+    |> Enum.map(fn(map) -> get_company_filing_data(map[:form_href], company_market_cap) end)
     |> flat_transactions_data_list()
     insider_trading_transactions_data = %{
       company_data: %{
@@ -20,7 +21,7 @@ defmodule InsiderTraderReporterService.InsiderTrading do
         company_cik: company_cik,
         company_market_cap: company_market_cap
       },
-      company_filings_data: company_filings_data
+      company_forms_data: company_forms_data
     }
     %{insider_trading_transactions_data: insider_trading_transactions_data}
   end

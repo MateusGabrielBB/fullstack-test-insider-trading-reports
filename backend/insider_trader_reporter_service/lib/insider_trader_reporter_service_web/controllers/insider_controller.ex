@@ -2,6 +2,7 @@ defmodule InsiderTraderReporterServiceWeb.InsiderController do
   use InsiderTraderReporterServiceWeb, :controller
 
   alias InsiderTraderReporterService.Company
+  alias InsiderTraderReporterService.Form
   alias InsiderTraderReporterService.InsiderTrading
 
   action_fallback InsiderTraderReporterServiceWeb.FallbackController
@@ -16,10 +17,10 @@ defmodule InsiderTraderReporterServiceWeb.InsiderController do
     end
   end
 
-  def get_company_filings(conn, company_name) do
-    case Company.get_company_filings(company_name) do
-      %{company_filings: company_filings} ->
-        render(conn, "companyFilings.json", company_filings: company_filings)
+  def get_company_forms(conn, company_name) do
+    case Form.get_company_forms(company_name) do
+      %{company_forms: company_forms} ->
+        render(conn, "companyForms.json", company_forms: company_forms)
       {:error, message} -> {:error, message}
       _ -> {:error, "Unexpected error"}
     end
