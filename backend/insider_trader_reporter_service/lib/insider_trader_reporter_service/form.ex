@@ -56,7 +56,7 @@ defmodule InsiderTraderReporterService.Form do
   defp get_company_form_data(form_url, company_market_cap) do
     {:ok, response} = SecClient.fetch_company_forms_page(form_url)
     {:ok, parsed_page} = Floki.parse_document(response)
-    [[partial_form_url]] = extract_form_url(parsed_page)
+    partial_form_url = extract_form_url(parsed_page)
     form_url = "#{@sec_base_url}#{partial_form_url}"
     {:ok, forms_data_xml} = SecClient.fetch_company_form_data(form_url)
     parse_and_filter_forms_data(forms_data_xml, form_url, company_market_cap)
@@ -66,7 +66,7 @@ defmodule InsiderTraderReporterService.Form do
     parsed_page
     |> Floki.find("a")
     |> Enum.filter(fn(tag) -> Floki.text(tag) =~ ~r/.xml/ end)
-    |> Enum.map(fn(tag) -> Floki.attribute(tag, "href") end)
+    |> Enum.find_value(fn(tag) -> Floki.attribute(tag, "href") end)
   end
 
   defp parse_and_filter_forms_data(form_data_xml, form_url, company_market_cap) do
