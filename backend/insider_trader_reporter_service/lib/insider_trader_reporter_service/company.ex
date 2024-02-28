@@ -1,8 +1,8 @@
 defmodule InsiderTraderReporterService.Company do
-
   alias InsiderTraderReporterService.Clients.SecClient
   alias InsiderTraderReporterService.Clients.YahooFinanceClient
 
+  @derive(Jason.Encoder)
   defstruct [
       company_name: "",
       company_ticker: "",
@@ -10,7 +10,7 @@ defmodule InsiderTraderReporterService.Company do
       company_market_cap: 0
   ]
 
-  def new(company_name, company_ticker, company_cik, company_market_cap) do
+  defp new(company_name, company_ticker, company_cik, company_market_cap) do
     %InsiderTraderReporterService.Company{
       company_name: company_name,
       company_ticker: company_ticker,
@@ -24,9 +24,9 @@ defmodule InsiderTraderReporterService.Company do
     case SecClient.fetch_companies_info() do
       {:ok, resp_body} ->
         {:ok, decoded_response} = Jason.decode(resp_body)
-        company_data_list = decoded_response["data"]
+        filtered_company_data = decoded_response["data"]
         |> Enum.find(nil, fn data_set -> Enum.at(data_set, 1) === company_name end)
-        [company_cik, company_name, company_ticker, _exchange] = company_data_list
+        [company_cik, company_name, company_ticker, _exchange] = filtered_company_data
         {:company_market_cap, company_market_cap} = get_company_market_cap_value(company_ticker)
         company_data = new(company_name, company_ticker, company_cik, company_market_cap)
         {:company_data, company_data}

@@ -11,7 +11,7 @@ defmodule InsiderTraderReporterServiceWeb.InsiderController do
     case Company.get_company_data(company_name) do
       {:company_data, nil} -> {:error, :not_found}
       {:company_data, company_data} ->
-        render(conn, "companyData.json", company_data: Map.from_struct(company_data))
+        render(conn, "companyData.json", company_data: company_data)
       {:error, message} -> {:error, message}
       _ -> {:error, "Unexpected error"}
     end
