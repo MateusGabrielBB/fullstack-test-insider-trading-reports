@@ -7,13 +7,13 @@ defmodule InsiderTraderReporterServiceWeb.InsiderView do
     }
   end
 
-  def render("companyForms.json", %{company_forms: company_forms}) do
+  def render("companyForms.json", %{company_forms_urls: company_forms_urls}) do
     %{
-      forms: company_forms,
+      forms: company_forms_urls,
     }
   end
 
-  def render("companyFilingsData.json", %{insider_trading_transactions_data: insider_trading_transactions_data}) do
+  def render("companyInsiderTradingData.json", %{insider_trading_transactions_data: insider_trading_transactions_data}) do
     %{
       insider_trading_transactions_data: insider_trading_transactions_data,
     }

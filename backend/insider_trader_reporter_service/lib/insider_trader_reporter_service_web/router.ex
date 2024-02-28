@@ -24,7 +24,7 @@ defmodule InsiderTraderReporterServiceWeb.Router do
     pipe_through :api
 
     get "/company/:company_name/data", InsiderController, :get_company_data
-    get "/company/:company_name/forms", InsiderController, :get_company_forms
+    get "/company/:company_name/forms", InsiderController, :get_company_forms_urls
     get "/company/:company_name/insider-trading-data", InsiderController, :get_insider_trading_report_data
   end
 

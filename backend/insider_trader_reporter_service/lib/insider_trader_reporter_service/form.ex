@@ -24,26 +24,26 @@ defmodule InsiderTraderReporterService.Form do
   end
 
   def get_company_forms_data(company_name, company_market_cap) do
-    {:company_forms, company_forms} = get_company_forms(company_name)
-    company_forms
+    {:company_forms_urls, company_forms_urls} = get_company_forms_urls(company_name)
+    company_forms_urls
     |> Enum.map(fn(form_href) -> get_company_form_data(form_href, company_market_cap) end)
     |> List.flatten()
   end
 
-  def get_company_forms(company_name) do
+  def get_company_forms_urls(company_name) do
     {:company_data, company_data} = Company.get_company_data(company_name)
     company_cik = company_data.company_cik
     case SecClient.fetch_company_forms_list(company_cik) do
       {:ok, resp_body} ->
-        {:company_forms, filter_relevant_forms(resp_body)}
+        {:company_forms_urls, filter_relevant_forms_urls(resp_body)}
 
       {:error, message} ->
         {:error, message}
     end
   end
 
-  defp filter_relevant_forms(company_forms) do
-    SweetXml.parse(company_forms, namespace_conformant: true)
+  defp filter_relevant_forms_urls(company_forms_urls) do
+    SweetXml.parse(company_forms_urls, namespace_conformant: true)
     |> xpath(
       ~x"//entry/content"l,
       form_type: ~x"./filing-type/text()"s,
