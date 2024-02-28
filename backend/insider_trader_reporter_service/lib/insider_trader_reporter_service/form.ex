@@ -27,6 +27,7 @@ defmodule InsiderTraderReporterService.Form do
     {:company_forms, company_forms} = get_company_forms(company_name)
     company_forms
     |> Enum.map(fn(form_href) -> get_company_form_data(form_href, company_market_cap) end)
+    |> List.flatten()
   end
 
   def get_company_forms(company_name) do

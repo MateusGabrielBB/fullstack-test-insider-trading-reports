@@ -5,7 +5,7 @@ defmodule InsiderTraderReporterService.InsiderTrading do
   @derive(Jason.Encoder)
   defstruct [
     company_data: %Company{},
-    company_forms_data: [%Form{}]
+    company_forms_data: %Form{}
   ]
 
   defp new(company_data, company_forms_data) do
