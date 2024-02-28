@@ -22,18 +22,20 @@ If the request have a valid company name, the response should be something like:
 {
     "insider_trading_transactions_data": {
         "company_data": {
-            "company_market_cap": 3058740494336,
-            "company_cik": 789019,
             "company_name": "MICROSOFT CORP",
-            "company_ticker": "MSFT"
+            "company_market_cap": 3027755859968,
+            "company_ticker": "MSFT",
+            "company_cik": 789019
         },
-        "company_filings_data": [
+        "company_forms_data": [
             {
-                "transaction_data": {
+                "form_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml",
+                "insider_trader_data": {
                     "insider_name": "SMITH BRADFORD L",
-                    "insider_title": "Vice Chair and President",
-                    "filing_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml",
-                    "market_cap_percentage_value": "0.000607740%",
+                    "insider_title": "Vice Chair and President"
+                },
+                "transaction_data": {
+                    "market_cap_percentage_value": "0.000612005%",
                     "transaction_date": "2024-02-02",
                     "transaction_per_share_price": 411.7784,
                     "transaction_shares_amount": 45000,
@@ -41,11 +43,13 @@ If the request have a valid company name, the response should be something like:
                 }
             },
             {
-                "transaction_data": {
+                "form_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml",
+                "insider_trader_data": {
                     "insider_name": "SMITH BRADFORD L",
-                    "insider_title": "Vice Chair and President",
-                    "filing_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml",
-                    "market_cap_percentage_value": "0.000014315%",
+                    "insider_title": "Vice Chair and President"
+                },
+                "transaction_data": {
+                    "market_cap_percentage_value": "0.000014416%",
                     "transaction_date": "2024-02-05",
                     "transaction_per_share_price": 404.8921,
                     "transaction_shares_amount": 1078,
