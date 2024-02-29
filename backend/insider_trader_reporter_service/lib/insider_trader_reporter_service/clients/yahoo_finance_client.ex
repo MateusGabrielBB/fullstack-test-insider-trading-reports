@@ -1,29 +1,58 @@
 defmodule InsiderTraderReporterService.Clients.YahooFinanceClient do
-  @yahoo_finance_base_url "https://query2.finance.yahoo.com"
+  alias InsiderTraderReporterService.Clients.ClientHelper
+
+  @yahoo_finance_api_base_url "https://query2.finance.yahoo.com"
+  @yahoo_finance_cookies_url "https://fc.yahoo.com"
+  @yahoo_finance_crumble_url "/v1/test/getcrumb"
+  @yahoo_finance_user_agent "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
 
   def fetch_market_cap_value(company_ticker) do
     endpoint = fetch_market_cap_value_url(company_ticker)
-    request_response = HTTPoison.get(endpoint)
-    handle_client_response(request_response)
+    HTTPoison.get(endpoint)
+    |> ClientHelper.handle_client_response()
+  end
+
+  def fetch_company_historical_prices(period_start, period_end) do
+    endpoint = fetch_market_historical_values_url(period_start, period_end)
+    HTTPoison.get(endpoint)
+    |> ClientHelper.handle_client_response()
+  end
+
+  def fetch_company_shares_outstanding(company_ticker) do
+    {req_cookie, req_crumble} = fetch_cookie_and_crumble()
+    endpoint = fetch_company_shares_outstanding_url(company_ticker, req_crumble)
+    req_header = [{"Cookie", req_cookie}, {"User-agent", @yahoo_finance_user_agent}]
+    HTTPoison.get(endpoint, req_header)
+    |> ClientHelper.handle_client_response()
+  end
+
+  defp fetch_cookie_and_crumble() do
+    {:ok, %HTTPoison.Response{headers: resp_headers}} = HTTPoison.get(@yahoo_finance_cookies_url)
+    req_cookie_value = get_cookie_from_response(resp_headers)
+    get_crumble_endpoint = "#{@yahoo_finance_api_base_url}#{@yahoo_finance_crumble_url}"
+    req_header = [{"Cookie", req_cookie_value}, {"User-agent", @yahoo_finance_user_agent}]
+    {:ok, crumble_value} = HTTPoison.get(get_crumble_endpoint, req_header)
+    |> ClientHelper.handle_client_response()
+    {req_cookie_value, crumble_value}
+  end
+
+  defp get_cookie_from_response(resp_headers) do
+    {"Set-Cookie", resp_cookie} = resp_headers
+    |> Enum.find(fn(tuple) -> elem(tuple, 0) === "Set-Cookie" end)
+    resp_cookie
+    |> String.split(";")
+    |> hd()
   end
 
   defp fetch_market_cap_value_url(company_ticker) do
-    "#{@yahoo_finance_base_url}/v10/finance/quoteSummary/?symbol=#{company_ticker}&modules=summaryDetail"
+    "#{@yahoo_finance_api_base_url}/v10/finance/quoteSummary/?symbol=#{company_ticker}&modules=summaryDetail"
   end
 
-  defp handle_client_response(client_response) do
-    case client_response do
-      {:ok, %HTTPoison.Response{status_code: 200, body: resp_body}} ->
-        {:ok, resp_body}
+  defp fetch_market_historical_values_url(period_start, period_end) do
+    "#{@yahoo_finance_api_base_url}/v7/finance/download/AAPL?period1=#{period_start}&period2=#{period_end}&interval=1d&events=history&includeAdjustedClose=true"
+  end
 
-      {:ok, %HTTPoison.Response{status_code: code, body: _resp_body}} when code !== 200 ->
-        {:error, "Failed request! | Response Status code: #{code}"}
-
-      {:error, reason} ->
-        {:error, "Failed request! | Reason: #{reason}"}
-
-      _ ->
-        {:error, "Failed request! | Unknown Reason"}
-    end
+  defp fetch_company_shares_outstanding_url(company_ticker, crumble) do
+    "#{@yahoo_finance_api_base_url}/v7/finance/options/#{company_ticker}?crumb=#{crumble}"
   end
 end
