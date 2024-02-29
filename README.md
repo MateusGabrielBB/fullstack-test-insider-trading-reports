@@ -23,38 +23,39 @@ If the request have a valid company name, the response should be something like:
     "insider_trading_transactions_data": {
         "company_data": {
             "company_name": "MICROSOFT CORP",
-            "company_market_cap": 3027755859968,
             "company_ticker": "MSFT",
             "company_cik": 789019
         },
         "company_forms_data": [
             {
-                "form_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml",
                 "insider_trader_data": {
                     "insider_name": "SMITH BRADFORD L",
                     "insider_title": "Vice Chair and President"
                 },
                 "transaction_data": {
-                    "market_cap_percentage_value": "0.000612005%",
                     "transaction_date": "2024-02-02",
-                    "transaction_per_share_price": 411.7784,
                     "transaction_shares_amount": 45000,
-                    "transaction_value": 18530028.0
-                }
+                    "transaction_per_share_price": 411.7784,
+                    "transaction_value": 18530028.0,
+                    "market_cap_percentage_value": "0.000606439%",
+                    "market_cap_value": 3055545517912.3604
+                },
+                "form_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml"
             },
             {
-                "form_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml",
                 "insider_trader_data": {
                     "insider_name": "SMITH BRADFORD L",
                     "insider_title": "Vice Chair and President"
                 },
                 "transaction_data": {
-                    "market_cap_percentage_value": "0.000014416%",
                     "transaction_date": "2024-02-05",
-                    "transaction_per_share_price": 404.8921,
                     "transaction_shares_amount": 1078,
-                    "transaction_value": 436473.68380000006
-                }
+                    "transaction_per_share_price": 404.8921,
+                    "transaction_value": 436473.68380000006,
+                    "market_cap_percentage_value": "0.000014481%",
+                    "market_cap_value": 3014157915455.7603
+                },
+                "form_url": "https://www.sec.gov/Archives/edgar/data/789019/000106299324002112/form4.xml"
             },
             ...
         ]
