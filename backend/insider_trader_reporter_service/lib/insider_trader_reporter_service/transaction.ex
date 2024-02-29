@@ -8,7 +8,8 @@ defmodule InsiderTraderReporterService.Transaction do
     transaction_shares_amount: 0,
     transaction_per_share_price: 0.0,
     transaction_value: 0.0,
-    market_cap_percentage_value: "0.0%"
+    market_cap_percentage_value: "0.0%",
+    market_cap_value: 0.0
   ]
 
   defp new(
@@ -16,18 +17,20 @@ defmodule InsiderTraderReporterService.Transaction do
         transaction_shares_amount,
         transaction_per_share_price,
         transaction_value,
-        market_cap_percentage_value
+        market_cap_percentage_value,
+        market_cap_value
       ) do
     %InsiderTraderReporterService.Transaction{
       transaction_date: transaction_date,
       transaction_shares_amount: transaction_shares_amount,
       transaction_per_share_price: transaction_per_share_price,
       transaction_value: transaction_value,
-      market_cap_percentage_value: market_cap_percentage_value
+      market_cap_percentage_value: market_cap_percentage_value,
+      market_cap_value: market_cap_value
     }
   end
 
-  def get_transactions_data(form_data, company_market_cap) do
+  def get_transactions_data(form_data, company_market_cap_values) do
     {nd_transactions_shares_amounts, nd_transactions_per_share_prices, nd_transactions_dates} =
       get_transactions_data_by_transaction_type(form_data, "nonDerivativeTable", "nonDerivativeTransaction")
     {d_transactions_shares_amounts, d_transactions_per_share_prices, d_transactions_dates} =
@@ -35,7 +38,7 @@ defmodule InsiderTraderReporterService.Transaction do
     transactions_shares_amounts = nd_transactions_shares_amounts ++ d_transactions_shares_amounts
     transactions_per_share_prices = nd_transactions_per_share_prices ++ d_transactions_per_share_prices
     transactions_dates = nd_transactions_dates ++ d_transactions_dates
-    split_values_lists_by_transaction(transactions_dates, transactions_shares_amounts, transactions_per_share_prices, company_market_cap)
+    split_values_lists_by_transaction(transactions_dates, transactions_shares_amounts, transactions_per_share_prices, company_market_cap_values)
   end
 
   defp get_transactions_data_by_transaction_type(form_data, first_key, second_key) do
@@ -52,9 +55,9 @@ defmodule InsiderTraderReporterService.Transaction do
     {transactions_shares_amounts, transactions_per_share_prices, transactions_dates}
   end
 
-  defp split_values_lists_by_transaction(transactions_dates, transactions_shares_amounts, transactions_per_share_prices, company_market_cap) do
+  defp split_values_lists_by_transaction(transactions_dates, transactions_shares_amounts, transactions_per_share_prices, company_market_cap_values) do
     Enum.zip([transactions_dates, transactions_shares_amounts, transactions_per_share_prices])
-    |> Enum.map(fn(values) -> create_transactions_structs(values, company_market_cap) end)
+    |> Enum.map(fn(values) -> create_transactions_structs(values, company_market_cap_values) end)
   end
 
   defp get_transactions_list(transactions_data, first_key, second_key) do
@@ -108,11 +111,30 @@ defmodule InsiderTraderReporterService.Transaction do
     end
   end
 
-  defp create_transactions_structs({transaction_date, transaction_shares_amount, transaction_per_share_price}, company_market_cap) do
+  defp create_transactions_structs({transaction_date, transaction_shares_amount, transaction_per_share_price}, company_market_cap_values) do
     transaction_value = transaction_shares_amount * transaction_per_share_price
-    market_cap_percentage_value = (transaction_value/company_market_cap) * @market_cap_divisor
+    market_cap_value = get_company_market_cap_value(transaction_date, company_market_cap_values)
+    market_cap_percentage_value = (transaction_value/market_cap_value) * @market_cap_divisor
     formatted_market_cap_percentage_value = convert_to_percentage_notation(market_cap_percentage_value)
-    new(transaction_date,transaction_shares_amount, transaction_per_share_price, transaction_value, formatted_market_cap_percentage_value)
+    new(transaction_date,transaction_shares_amount, transaction_per_share_price, transaction_value, formatted_market_cap_percentage_value, market_cap_value)
+  end
+
+  defp get_company_market_cap_value(transaction_date, company_market_cap_values) do
+    case filter_market_cap_value_in_transaction_date(transaction_date, company_market_cap_values) do
+      nil ->
+        company_market_cap_values
+        |> List.last()
+        |> Map.get(:market_cap)
+
+      market_cap ->
+        market_cap
+    end
+  end
+
+  defp filter_market_cap_value_in_transaction_date(transaction_date, company_market_cap_values) do
+    company_market_cap_values
+    |> Enum.find(%{}, fn(map) -> Map.get(map, :date) === transaction_date end)
+    |> Map.get(:market_cap)
   end
 
   defp number_type(str) when is_binary(str) do

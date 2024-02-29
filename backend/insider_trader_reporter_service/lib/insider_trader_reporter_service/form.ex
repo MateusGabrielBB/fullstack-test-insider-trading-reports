@@ -5,6 +5,7 @@ defmodule InsiderTraderReporterService.Form do
   alias InsiderTraderReporterService.Company
   alias InsiderTraderReporterService.InsiderTrader
   alias InsiderTraderReporterService.Transaction
+  alias InsiderTraderReporterService.MarketCap
 
   @sec_base_url "https://www.sec.gov"
 
@@ -23,10 +24,11 @@ defmodule InsiderTraderReporterService.Form do
     }
   end
 
-  def get_company_forms_data(company_name, company_market_cap) do
+  def get_company_forms_data(company_name, company_ticker) do
+    company_market_cap_values = MarketCap.get_market_cap_values(company_ticker)
     {:company_forms_urls, company_forms_urls} = get_company_forms_urls(company_name)
     company_forms_urls
-    |> Enum.map(fn(form_href) -> get_company_form_data(form_href, company_market_cap) end)
+    |> Enum.map(fn(form_href) -> get_company_form_data(form_href, company_market_cap_values) end)
     |> List.flatten()
   end
 
@@ -53,13 +55,13 @@ defmodule InsiderTraderReporterService.Form do
     |> Enum.map(fn(map) -> Map.get(map, :form_href) end)
   end
 
-  defp get_company_form_data(form_url, company_market_cap) do
+  defp get_company_form_data(form_url, company_market_cap_values) do
     {:ok, response} = SecClient.fetch_company_forms_page(form_url)
     {:ok, parsed_page} = Floki.parse_document(response)
     partial_form_url = extract_form_url(parsed_page)
     form_url = "#{@sec_base_url}#{partial_form_url}"
     {:ok, forms_data_xml} = SecClient.fetch_company_form_data(form_url)
-    parse_and_filter_forms_data(forms_data_xml, form_url, company_market_cap)
+    parse_and_filter_forms_data(forms_data_xml, form_url, company_market_cap_values)
   end
 
   defp extract_form_url(parsed_page) do
@@ -69,11 +71,11 @@ defmodule InsiderTraderReporterService.Form do
     |> Enum.find_value(fn(tag) -> Floki.attribute(tag, "href") end)
   end
 
-  defp parse_and_filter_forms_data(form_data_xml, form_url, company_market_cap) do
+  defp parse_and_filter_forms_data(form_data_xml, form_url, company_market_cap_values) do
     form_data =  XmlToMap.naive_map(form_data_xml)
     |> Map.get("ownershipDocument", %{})
     insider_trader_data = InsiderTrader.get_insider_trader_data(form_data)
-    Transaction.get_transactions_data(form_data, company_market_cap)
+    Transaction.get_transactions_data(form_data, company_market_cap_values)
     |> Enum.map(fn(transaction_data) -> new(insider_trader_data, transaction_data, form_url) end)
   end
 end

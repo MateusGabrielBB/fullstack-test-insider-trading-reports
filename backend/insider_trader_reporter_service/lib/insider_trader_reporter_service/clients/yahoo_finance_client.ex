@@ -6,14 +6,8 @@ defmodule InsiderTraderReporterService.Clients.YahooFinanceClient do
   @yahoo_finance_crumble_url "/v1/test/getcrumb"
   @yahoo_finance_user_agent "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
 
-  def fetch_market_cap_value(company_ticker) do
-    endpoint = fetch_market_cap_value_url(company_ticker)
-    HTTPoison.get(endpoint)
-    |> ClientHelper.handle_client_response()
-  end
-
-  def fetch_company_historical_prices(period_start, period_end) do
-    endpoint = fetch_market_historical_values_url(period_start, period_end)
+  def fetch_company_historical_prices(company_ticker, period_start, period_end) do
+    endpoint = fetch_market_historical_values_url(company_ticker, period_start, period_end)
     HTTPoison.get(endpoint)
     |> ClientHelper.handle_client_response()
   end
@@ -44,12 +38,8 @@ defmodule InsiderTraderReporterService.Clients.YahooFinanceClient do
     |> hd()
   end
 
-  defp fetch_market_cap_value_url(company_ticker) do
-    "#{@yahoo_finance_api_base_url}/v10/finance/quoteSummary/?symbol=#{company_ticker}&modules=summaryDetail"
-  end
-
-  defp fetch_market_historical_values_url(period_start, period_end) do
-    "#{@yahoo_finance_api_base_url}/v7/finance/download/AAPL?period1=#{period_start}&period2=#{period_end}&interval=1d&events=history&includeAdjustedClose=true"
+  defp fetch_market_historical_values_url(company_ticker, period_start, period_end) do
+    "#{@yahoo_finance_api_base_url}/v7/finance/download/#{company_ticker}?period1=#{period_start}&period2=#{period_end}&interval=1d&events=history&includeAdjustedClose=true"
   end
 
   defp fetch_company_shares_outstanding_url(company_ticker, crumble) do
