@@ -1,0 +1,22 @@
+FROM elixir:latest
+
+RUN apt-get update
+
+ENV MIX_ENV=prod
+
+WORKDIR /service
+
+COPY mix.exs ./
+
+RUN mix do deps.get, deps.compile
+
+COPY . ./
+
+RUN mix compile
+
+COPY wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
+
+EXPOSE 4000
+
+CMD ["sh", "-c", "wait-for-it postgres:5432 -- mix ecto.setup && mix phx.server"]

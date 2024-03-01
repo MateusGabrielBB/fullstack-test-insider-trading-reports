@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: insider_trader_reporter_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  backend-service:
+    build:
+      context: ./backend/insider_trader_reporter_service
+    environment:
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - PGDATABASE=insider_trader_reporter_service_db
+      - PGPORT=5432
+      - PGHOST=postgres
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/insider_trader_reporter_service_db
+      - SECRET_KEY_BASE=fD6LRjyEFgFZ1wZzQtCm5HEaBJPfh45qf6Dfblt7MMC6daMMb8Gxsout0jGm4f7r
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+
+
