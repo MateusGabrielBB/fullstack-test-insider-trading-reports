@@ -8,6 +8,22 @@ It's necessary to improve the extraction of data from the reports to improve the
 As some forms have footnotes and other relevant information for a more complete analysis of transactions, the endpoint also returns links to access the reports from where the data is being extracted.
 
 # How to run the server
+### With Docker
+It is necessary to have Docker and Docker Compose installed in your machine to run the server this way. I'm using the versions:
+- Docker version 25.0.3
+- Docker Compose version v2.24.5
+
+To run the project make sure you are in the `fullstack-test-insider-trading-reports` directory and for the first run use the command:
+```
+$ docker-compose up --build
+```
+Once the docker image was built, you can run the project by simply using the command without the `--build` option:
+```
+$ docker-compose up
+```
+
+### Locally
+
 First make sure you'r inside the directory `/backend/insider_trader_reporter_service/` then run the commands:
   * Install dependencies with `mix deps.get`
   * Create and migrate your database with `mix ecto.setup`
